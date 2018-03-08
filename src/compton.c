@@ -1886,7 +1886,32 @@ paint_all(session_t *ps, XserverRegion region, XserverRegion region_real, win *t
       // Clear the shadow here instead of in make_shadow() for saving GPU
       // power and handling shaped windows
       if (ps->o.clear_shadow && w->border_size)
-        XFixesSubtractRegion(ps->dpy, reg_paint, reg_paint, w->border_size);
+      {
+        XRectangle r;
+        r.x = w->a.x;
+        r.y = w->a.y;
+        r.width = w->widthb;
+        r.height = w->heightb;
+
+        // modify rectangle to clear out the i3 borders,
+        // otherwise the alpha areas will not have a shadow
+        // beneath them
+        if(w->focused == false)
+        {		
+          // This variable b MUST match the border width 
+          // specified in your i3 config
+          int b = 2;
+          r.x += b;
+          r.y += b;
+          r.width -= b*2;
+          r.height -= b*2;
+        }
+
+        XserverRegion shadowRegion = XFixesCreateRegion(ps->dpy, &r, 1);
+
+        XFixesSubtractRegion(ps->dpy, reg_paint, reg_paint, shadowRegion);
+        free_region(ps, &shadowRegion);
+    }
 
 #ifdef CONFIG_XINERAMA
       if (ps->o.xinerama_shadow_crop && w->xinerama_scr >= 0)

@@ -35,6 +35,12 @@ partially doing this out of a desire to learn Xlib.
 * fixed the conflict with chromium and similar windows
 * [many more](https://github.com/chjj/compton/issues)
 
+## Changes from [OG Compton](https://github.com/chjj/compton)
+* Added workaround to allow for invisible i3 borders for inactive, transparent windows.
+  * Make sure your inactive border color is **#FFFF00** (bright yellow) to match the `vec4(1,1,0, 1.0)` in the glsl shader. This is the color hue that enables the transparency.
+  * Set the border width in line 1906 of `compton.c` to match your i3 border width. 
+  * Build and run with the chroma shader enabled. See [How to Build](https://github.com/jogleasonjr/compton#how-to-build)
+
 ## Building
 
 ### Dependencies:
@@ -70,10 +76,18 @@ To build, make sure you have the dependencies above:
 ```bash
 # Make the main program
 $ make
+# Run the build
+$ ./compton --backend glx --force-win-blend --glx-fshader-win "$(cat i3-border-transparency-fshader-win.glsl)"
+```
+
+Optionally build the docs and install the compositor
+
+```bash
 # Make the man pages
 $ make docs
 # Install
 $ make install
+
 ```
 
 (Compton does include a `_CMakeLists.txt` in the tree, but we haven't decided whether we should switch to CMake yet. The `Makefile` is fully usable right now.)
